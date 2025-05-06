@@ -1,15 +1,14 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
-import requests
 
-# Цвета по планетам
+# Цвета по ведическим планетам (твоя палитра)
 color_map = {
     1: '#E52B50', 2: '#87CEEB', 3: '#F4C430', 4: '#86261c',
     5: '#009B77', 6: '#FADADD', 7: '#b2beb5', 8: '#0047AB', 9: '#ff4040'
 }
 
-# Координаты Васту-зон
+# Васту зоны
 zone_coords = {
     1: [(4,4), (5,4), (6,4), (4,5), (5,5), (6,5), (4,6), (5,6), (6,6),
         (2,1), (2,2), (1,2), (8,1), (8,2), (9,2), (1,8), (2,8), (2,9), (8,8), (8,9), (9,8)],
@@ -28,19 +27,7 @@ def reduce_to_digit(value):
         total = sum(int(d) for d in str(total))
     return total
 
-# Получить координаты по адресу
-def get_coordinates_from_address(address):
-    url = 'https://nominatim.openstreetmap.org/search'
-    params = {'q': address, 'format': 'json', 'limit': 1}
-    headers = {'User-Agent': 'VastuApp/1.0'}
-    response = requests.get(url, params=params, headers=headers)
-    data = response.json()
-    if data:
-        return float(data[0]['lat']), float(data[0]['lon'])
-    else:
-        return None, None
-
-# Рисуем сетку
+# Рисуем мандалу
 def draw_grid(colors):
     zone_map = np.zeros((9, 9), dtype=int)
     for zone, coords in zone_coords.items():
@@ -63,29 +50,30 @@ def draw_grid(colors):
     plt.grid(True)
     st.pyplot(fig)
 
-# Streamlit интерфейс
-st.title("🧭 Индивидуальная Васту Мандала по адресу")
+# Интерфейс
+st.title("🧭 Индивидуальная Васту Мандала по координатам")
 
-address = st.text_input("Введите адрес (например: Россия, Челябинск, улица Габдуллы Тукая, 20)", "")
+lat_input = st.text_input("Северная широта (например 55.2055):", "")
+lon_input = st.text_input("Восточная долгота (например 61.2795):", "")
 
-if st.button("Рассчитать и построить мандалу"):
-    if address:
-        lat, lon = get_coordinates_from_address(address)
-        if lat is None:
-            st.error("Координаты не найдены. Проверьте адрес.")
-        else:
-            st.success(f"Координаты: широта {lat}, долгота {lon}")
-            lat_deg = int(lat)
-            lat_min = int(abs(lat - lat_deg) * 10000)
-            lon_deg = int(lon)
-            lon_min = int(abs(lon - lon_deg) * 10000)
+if st.button("Построить мандалу"):
+    try:
+        lat = float(lat_input)
+        lon = float(lon_input)
 
-            z1 = reduce_to_digit(lat_deg)
-            z2 = reduce_to_digit(lon_deg)
-            z3 = reduce_to_digit(lat_min)
-            z4 = reduce_to_digit(lon_min)
+        lat_deg = int(lat)
+        lat_min = int(abs(lat - lat_deg) * 10000)
 
-            st.write(f"Числа по координатам: 🌞 {z1}, 🌍 {z2}, ⏱ {z3}, 🧭 {z4}")
-            draw_grid({1: z1, 2: z2, 3: z3, 4: z4})
-    else:
-        st.warning("Введите адрес для начала расчёта.")
+        lon_deg = int(lon)
+        lon_min = int(abs(lon - lon_deg) * 10000)
+
+        z1 = reduce_to_digit(lat_deg)
+        z2 = reduce_to_digit(lon_deg)
+        z3 = reduce_to_digit(lat_min)
+        z4 = reduce_to_digit(lon_min)
+
+        st.success(f"Координаты: широта {lat} → {z1}/{z3}, долгота {lon} → {z2}/{z4}")
+        draw_grid({1: z1, 2: z2, 3: z3, 4: z4})
+
+    except ValueError:
+        st.error("Введите корректные числа в формате 55.2055 и 61.2795")
