@@ -2,13 +2,13 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Цвета по ведическим планетам (твоя палитра)
+# Цвета по ведическим планетам
 color_map = {
     1: '#E52B50', 2: '#87CEEB', 3: '#F4C430', 4: '#86261c',
     5: '#009B77', 6: '#FADADD', 7: '#b2beb5', 8: '#0047AB', 9: '#ff4040'
 }
 
-# Васту зоны
+# Координаты зон
 zone_coords = {
     1: [(4,4), (5,4), (6,4), (4,5), (5,5), (6,5), (4,6), (5,6), (6,6),
         (2,1), (2,2), (1,2), (8,1), (8,2), (9,2), (1,8), (2,8), (2,9), (8,8), (8,9), (9,8)],
@@ -27,7 +27,7 @@ def reduce_to_digit(value):
         total = sum(int(d) for d in str(total))
     return total
 
-# Рисуем мандалу
+# Визуализация мандалы
 def draw_grid(colors):
     zone_map = np.zeros((9, 9), dtype=int)
     for zone, coords in zone_coords.items():
@@ -62,10 +62,10 @@ if st.button("Построить мандалу"):
         lon = float(lon_input)
 
         lat_deg = int(lat)
-        lat_min = int(abs(lat - lat_deg) * 10000)
+        lat_min = int(round((lat - lat_deg) * 60))
 
         lon_deg = int(lon)
-        lon_min = int(abs(lon - lon_deg) * 10000)
+        lon_min = int(round((lon - lon_deg) * 60))
 
         z1 = reduce_to_digit(lat_deg)
         z2 = reduce_to_digit(lon_deg)
